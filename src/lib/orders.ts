@@ -1,7 +1,7 @@
 import { eq, sql, type SQL } from "drizzle-orm";
 
 import { db } from "@/db";
-import { orders } from "@/db/schema";
+import { orders, type ShippingAddress } from "@/db/schema";
 
 // Order lifecycle: pending (stock held) -> paid, or pending -> cancelled (stock released).
 // Neon's HTTP driver has no interactive transactions, so every multi-step change is either a
@@ -9,7 +9,8 @@ import { orders } from "@/db/schema";
 // negative because inventory has a CHECK (quantity >= 0): a short line aborts the whole batch.
 // No request context needed, so webhooks and scripts can call these directly.
 
-export const ORDER_HOLD_MINUTES = 30;
+// Must outlast the Stripe Checkout session (src/lib/stripe.ts), so a payment never lands on a released order.
+export const ORDER_HOLD_MINUTES = 35;
 
 export type CreateOrderResult =
   | { ok: true; orderId: string; number: number }
@@ -90,10 +91,22 @@ export async function releaseExpiredOrders(): Promise<number> {
 // Marks a pending order paid and removes the purchased items from the customer's cart.
 // A "cancelled" result means the hold expired and the stock was released before payment landed:
 // the caller must refund, or re-run the purchase.
-export async function markOrderPaid(orderId: string): Promise<"paid" | "cancelled" | "not-found"> {
+export type PaymentDetails = {
+  paymentIntentId: string | null;
+  shippingName: string | null;
+  shippingAddress: ShippingAddress | null;
+};
+
+export async function markOrderPaid(
+  orderId: string,
+  details: PaymentDetails = { paymentIntentId: null, shippingName: null, shippingAddress: null },
+): Promise<"paid" | "cancelled" | "not-found"> {
   await db.execute(sql`
     WITH paid AS (
-      UPDATE orders o SET status = 'paid', paid_at = now(), updated_at = now()
+      UPDATE orders o SET status = 'paid', paid_at = now(), updated_at = now(),
+        stripe_payment_intent_id = ${details.paymentIntentId}::text,
+        shipping_name = ${details.shippingName}::text,
+        shipping_address = ${details.shippingAddress ? JSON.stringify(details.shippingAddress) : null}::jsonb
       WHERE o.id = ${orderId}::uuid AND o.status = 'pending'
       RETURNING o.id, o.user_id
     )

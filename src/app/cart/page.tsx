@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { CheckoutButton } from "@/components/checkout-button";
 import { getCart, type CartLine } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
+import { getSession } from "@/lib/session";
 
 import { removeFromCart, setCartQuantity } from "./actions";
 
@@ -22,7 +24,8 @@ export default function CartPage() {
 }
 
 async function CartContent() {
-  const cart = await getCart();
+  const [cart, session] = await Promise.all([getCart(), getSession()]);
+  const signedIn = Boolean(session);
 
   if (cart.lines.length === 0) {
     return (
@@ -56,15 +59,16 @@ async function CartContent() {
           </span>
           <span>{formatPrice(cart.subtotalCents)}</span>
         </div>
-        <p className="caption mt-4">Shipping and taxes are calculated at checkout.</p>
-        <button type="button" className="btn btn-primary btn-block mt-6" disabled>
-          Checkout
-        </button>
-        <p className="caption mt-3">
-          {cart.canCheckout
-            ? "Checkout isn't available yet."
-            : "Update the items marked above to continue."}
-        </p>
+        <p className="caption mt-4">Complimentary shipping on every order.</p>
+        <div className="mt-6">
+          <CheckoutButton disabled={!cart.canCheckout} />
+        </div>
+        {!cart.canCheckout && (
+          <p className="caption mt-3">Update the items marked above to continue.</p>
+        )}
+        {!signedIn && (
+          <p className="caption mt-3">You&apos;ll be asked to sign in to complete your order.</p>
+        )}
       </section>
     </div>
   );

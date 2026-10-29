@@ -14,6 +14,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - `src/app/sign-in`, `sign-up`, `account` – auth pages; forms are client components (`auth-form.tsx`, `sign-out-button.tsx`); `account` redirects to `/sign-in?next=` when signed out
 - `src/lib/cart.ts` – cart reads (`getCart`, `getCartCount`, `findCartId`); uncached, needs `<Suspense>`. `src/app/cart/actions.ts` – Server Actions (add / set quantity / remove / `mergeGuestCart`); `src/app/cart/page.tsx` – bag page
 - `src/lib/orders.ts` – order lifecycle: `createOrder` (cart → pending order, holds stock), `cancelOrder`, `releaseExpiredOrders`, `markOrderPaid`; no request context, so webhooks/scripts can call it
+- `src/lib/stripe.ts` (client, shipping countries, `siteUrl`), `src/lib/checkout.ts` (`fulfillCheckoutSession`, idempotent) – Stripe-hosted Checkout. Flow: cart `startCheckout` action (`src/app/checkout/actions.ts`) → pending order + Stripe session → pay → `/checkout/return` route confirms with Stripe and marks paid → `/orders/[id]`. `src/app/api/stripe/webhook` does the same server-to-server (needs `STRIPE_WEBHOOK_SECRET`)
 - `src/app/api/auth/[...all]/route.ts` – Better Auth handler
 - `drizzle.config.ts` – drizzle-kit; migrations go to `drizzle/`
 
@@ -32,6 +33,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - `next build` queries the database (`generateStaticParams`), so it needs `DATABASE_URL` and a seeded DB.
 - Carts live in Postgres: signed-in users have one cart (`carts.user_id`), guests are found via the httpOnly `cart` cookie. `mergeGuestCart()` runs after sign-in/up. Quantities are capped by `maxQuantity(stock)`; totals use live DB prices. Stale guest carts aren't purged yet.
 - Stock is held when an order is created (pending, 30 min) and returned on cancel/expiry. Oversell is blocked by `inventory.quantity >= 0` plus `db.batch()` (one transaction); never decrement stock outside `orders.ts`. A payment for an already-cancelled order must be refunded. Nothing sweeps expired holds yet: call `releaseExpiredOrders()` on a schedule.
+- Payment: only ever mark orders paid via `fulfillCheckoutSession` (it verifies the amount and refunds if the hold was already released). Use `sk_test_` keys until launch. `ORDER_HOLD_MINUTES` (35) must stay above `CHECKOUT_SESSION_MINUTES` (31). `BETTER_AUTH_URL` doubles as the site origin for Stripe return URLs.
 - Auth tables come from `npx auth@latest generate --output src/db/schema/auth.ts` (load `.env.local` first); don't hand-write them. Re-run after adding Better Auth plugins, then `db:generate` + `db:migrate`.
 - `BETTER_AUTH_URL` must match the origin you browse (Better Auth rejects other origins with "Invalid origin"). Always pass `?next=` through `safeNext`.
 - Run `npm run typecheck && npm run lint` before finishing a change.

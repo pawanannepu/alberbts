@@ -1,8 +1,18 @@
 import { relations, sql } from "drizzle-orm";
-import { check, index, integer, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { check, index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { products } from "./catalog";
+
+// Mirrors Stripe's address object.
+export type ShippingAddress = {
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+};
 
 // pending: stock is held for the customer until `expiresAt`; paid: sold; cancelled: stock released.
 export const orderStatus = pgEnum("order_status", ["pending", "paid", "cancelled"]);
@@ -18,6 +28,10 @@ export const orders = pgTable(
     email: text().notNull(),
     status: orderStatus().notNull().default("pending"),
     subtotalCents: integer().notNull(),
+    stripeSessionId: text().unique(),
+    stripePaymentIntentId: text(),
+    shippingName: text(),
+    shippingAddress: jsonb().$type<ShippingAddress>(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     paidAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
