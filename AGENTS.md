@@ -22,7 +22,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - `src/app/api/auth/[...all]/route.ts` – Better Auth handler
 - `src/app/error.tsx` (page errors, inside the layout) · `src/app/global-error.tsx` (root layout failures; own `<html>`, inline styles). This Next version passes `retry`, not `reset`, to error components
 - `src/lib/maintenance.ts` – `runMaintenance()`: releases expired order holds, purges guest carts older than 30 days, old `throttles` / `rate_limit` rows, expired sessions and verifications. `src/app/api/maintenance/route.ts` exposes it; `vercel.json` runs it daily via Vercel Cron, which sends `Authorization: Bearer $CRON_SECRET` (without `CRON_SECRET` the route refuses to run)
-- `tests/unit` (pure, no DB; run in CI) · `tests/db` (real DB, opt-in, cleans up after itself) · `tests/smoke` (HTTP against a running production server). `.github/workflows/ci.yml` runs lint, typecheck, unit tests, `npm audit`, and a build when a `DATABASE_URL` secret exists
+- `tests/unit` (pure, no DB; run in CI) · `tests/db` (real DB, opt-in, cleans up after itself) · `tests/smoke` (HTTP against a running production server). `.github/workflows/ci.yml` is CI + CD: lint, typecheck, unit tests, `npm audit`, a build when a `DATABASE_URL` secret exists, then a Vercel deploy via the CLI (PRs → preview, `main` → production after `npm run db:migrate`) when `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets exist. Runtime env vars live in the Vercel project (pulled at build); disable Vercel's own Git deploys or every push deploys twice
 - `drizzle.config.ts` – drizzle-kit; migrations go to `drizzle/`
 
 ## Commands

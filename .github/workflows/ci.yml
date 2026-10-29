@@ -1,13 +1,19 @@
-name: CI
+name: CI/CD
+
+# CI: every push and pull request is linted, type-checked, tested and (with a DATABASE_URL secret) built.
+# CD: once CI passes, pull requests get a Vercel preview deployment and pushes to main go to
+# production, after applying database migrations. See the "Deploy" job for the secrets it needs.
 
 on:
   push:
     branches: [main]
   pull_request:
 
+# A newer push to a pull request replaces its older run. Never cancel a run on main: it may be
+# halfway through a production deploy or a migration.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -59,3 +65,70 @@ jobs:
         if: steps.db.outputs.present == 'true'
       - run: npm run build
         if: steps.db.outputs.present == 'true'
+
+  # Deploys with the Vercel CLI, so a deploy can only follow green checks. Needs three repository
+  # secrets (Settings > Secrets and variables > Actions); without them the job skips itself.
+  #   VERCEL_TOKEN        vercel.com/account/tokens
+  #   VERCEL_ORG_ID       "orgId" in .vercel/project.json after running `npx vercel link` once
+  #   VERCEL_PROJECT_ID   "projectId" in the same file
+  # Runtime env vars (DATABASE_URL, BETTER_AUTH_*, Stripe, Resend, CRON_SECRET...) live in the Vercel
+  # project and are pulled at build time, so they are not duplicated here.
+  # Turn off the Vercel Git integration for this repo, otherwise every push deploys twice.
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: checks
+    # Pull requests from forks don't receive secrets, so they can't deploy.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      TARGET: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+    steps:
+      - name: Check for Vercel secrets
+        id: vercel
+        run: |
+          if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Vercel secrets not set, skipping the deploy"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.vercel.outputs.present == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.vercel.outputs.present == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.vercel.outputs.present == 'true'
+      - name: Install Vercel CLI
+        if: steps.vercel.outputs.present == 'true'
+        run: npm install --global vercel@latest
+      - name: Pull Vercel project settings and env vars
+        if: steps.vercel.outputs.present == 'true'
+        run: vercel pull --yes --environment="$TARGET" --token="$VERCEL_TOKEN"
+      # Additive migrations first, so the new code never runs against an old schema. Uses the
+      # production DATABASE_URL pulled from Vercel; drizzle-kit skips migrations already applied.
+      - name: Apply database migrations
+        if: steps.vercel.outputs.present == 'true' && github.ref == 'refs/heads/main'
+        run: |
+          set -a
+          . .vercel/.env.production.local
+          set +a
+          npm run db:migrate
+      - name: Build
+        if: steps.vercel.outputs.present == 'true'
+        run: |
+          if [ "$TARGET" = "production" ]; then vercel build --prod --token="$VERCEL_TOKEN"; else vercel build --token="$VERCEL_TOKEN"; fi
+      - name: Deploy
+        if: steps.vercel.outputs.present == 'true'
+        id: deploy
+        run: |
+          if [ "$TARGET" = "production" ]; then url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"); else url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN"); fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed ($TARGET): $url" >> "$GITHUB_STEP_SUMMARY"
