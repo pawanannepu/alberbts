@@ -6,14 +6,20 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { orderItems, orders } from "@/db/schema";
 import { cancelOrder, createOrder } from "@/lib/orders";
+import { rateLimit } from "@/lib/rate-limit";
 import { getSession } from "@/lib/session";
-import { CHECKOUT_SESSION_MINUTES, SHIPPING_COUNTRIES, getStripe, siteUrl } from "@/lib/stripe";
+import { siteUrl } from "@/lib/site";
+import { CHECKOUT_SESSION_MINUTES, SHIPPING_COUNTRIES, getStripe } from "@/lib/stripe";
 
 // Holds the stock (pending order), then sends the shopper to Stripe's hosted checkout.
 // Returns an error message to show; on success it redirects and never returns.
 export async function startCheckout(): Promise<{ error: string } | void> {
   const session = await getSession();
   if (!session) redirect("/sign-in?next=/cart");
+  // Each attempt creates an order and a Stripe session, so keep it modest.
+  if (!(await rateLimit("checkout", 10, 60, session.user.id)).ok) {
+    return { error: "Too many attempts. Please wait a minute and try again." };
+  }
 
   const result = await createOrder({ userId: session.user.id, email: session.user.email });
   if (!result.ok) {

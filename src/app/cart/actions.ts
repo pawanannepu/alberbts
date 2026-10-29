@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { db } from "@/db";
 import { cartItems, carts, products } from "@/db/schema";
 import { CART_COOKIE, findCartId, maxQuantity } from "@/lib/cart";
+import { rateLimit } from "@/lib/rate-limit";
 import { getSession } from "@/lib/session";
 
 type CartResult = { ok: true } | { ok: false; error: string };
@@ -56,6 +57,8 @@ const touch = (cartId: string) =>
   db.update(carts).set({ updatedAt: new Date() }).where(eq(carts.id, cartId));
 
 export async function addToCart(slug: string): Promise<CartResult> {
+  if (!(await rateLimit("cart", 60, 60)).ok) return fail("Too many requests. Please wait a moment.");
+
   const [product, cartId] = await Promise.all([findProduct(slug), ensureCartId()]);
   if (!product) return fail("This piece is no longer available.");
 
@@ -87,8 +90,10 @@ export async function addToCart(slug: string): Promise<CartResult> {
 
 // Form action: sets a line to an exact quantity. Zero or less removes it.
 export async function setCartQuantity(formData: FormData): Promise<void> {
-  const quantity = Number(formData.get("quantity"));
+  const raw = formData.get("quantity");
+  const quantity = typeof raw === "string" && raw.trim() !== "" ? Number(raw) : Number.NaN;
   if (!Number.isInteger(quantity)) return;
+  if (!(await rateLimit("cart", 60, 60)).ok) return;
 
   const [cartId, product] = await Promise.all([findCartId(), findProduct(formData.get("slug"))]);
   if (!cartId || !product) return;
@@ -109,6 +114,7 @@ export async function setCartQuantity(formData: FormData): Promise<void> {
 }
 
 export async function removeFromCart(formData: FormData): Promise<void> {
+  if (!(await rateLimit("cart", 60, 60)).ok) return;
   const [cartId, product] = await Promise.all([findCartId(), findProduct(formData.get("slug"))]);
   if (!cartId || !product) return;
 

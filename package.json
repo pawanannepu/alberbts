@@ -12,7 +12,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "db:admin": "tsx src/db/grant-admin.ts",
+    "test": "tsx --test \"tests/unit/**/*.test.{ts,tsx}\"",
+    "test:db": "RUN_DB_TESTS=1 tsx --env-file=.env.local --test \"tests/db/**/*.test.ts\"",
+    "test:smoke": "tsx --test \"tests/smoke/**/*.test.ts\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -22,7 +26,8 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "resend": "^6.35.0",
-    "stripe": "^23.0.1"
+    "stripe": "^23.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -36,5 +41,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0"
   }
 }

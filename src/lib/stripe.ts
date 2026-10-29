@@ -15,8 +15,3 @@ export const CHECKOUT_SESSION_MINUTES = 31;
 
 // Countries we ship to (ISO 3166-1 alpha-2).
 export const SHIPPING_COUNTRIES = ["US", "CA", "GB", "AU", "DE", "FR", "IT", "ES", "NL", "IN"] as const;
-
-// Absolute site origin for Stripe return URLs. Same value Better Auth uses.
-export function siteUrl(): string {
-  return (process.env.BETTER_AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
-}

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ProductCard } from "@/components/product-card";
+import { pageMetadata } from "@/lib/seo";
 import {
   getCollection,
   getCollectionSlugs,
@@ -24,10 +25,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const collection = await getCollection(slug);
   if (!collection) return {};
-  return {
+  return pageMetadata({
     title: collection.title,
-    description: `Shop ${collection.title.toLowerCase()} at Alberbts.`,
-  };
+    description: `Shop ${collection.title.toLowerCase()} at Alberbts: ${collection.products.length} pieces, delivered with complimentary shipping.`,
+    path: `/collections/${slug}`, // canonical ignores ?sort=
+    image: collection.products[0]?.gallery[0],
+  });
 }
 
 export default async function CollectionPage({ params, searchParams }: Props) {

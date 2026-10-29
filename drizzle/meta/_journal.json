@@ -50,6 +50,27 @@
       "when": 1793292703966,
       "tag": "0006_order_confirmation",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793293313187,
+      "tag": "0007_admin_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793294647640,
+      "tag": "0008_auth_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793294660967,
+      "tag": "0009_throttles",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 // Static site content (navigation, hero and collection tiles, services, footer).
 // Products, categories and stock live in the database: see src/lib/catalog.ts.
 
-const unsplash = (id: string, width = 1200) =>
+export const unsplash = (id: string, width = 1200) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${width}&q=80`;
 
 export type Collection = {

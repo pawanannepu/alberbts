@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { fulfillCheckoutSession, orderIdFromSession } from "@/lib/checkout";
+import { rateLimit } from "@/lib/rate-limit";
 import { getSession } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
 
@@ -13,6 +14,12 @@ import { getStripe } from "@/lib/stripe";
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get("session_id");
   if (!sessionId?.startsWith("cs_")) redirect("/cart");
+
+  // Each request calls Stripe's API, so don't let a loop hammer it.
+  const limit = await rateLimit("pay-return", 30, 60);
+  if (!limit.ok) {
+    return new Response("Too many requests", { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } });
+  }
 
   const user = await getSession();
   if (!user) {

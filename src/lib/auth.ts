@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 import { after } from "next/server";
 
 import { db } from "@/db";
@@ -33,6 +34,19 @@ export const auth = betterAuth({
       await sendEmail({ to: user.email, ...verifyEmailMessage({ name: user.name, url }) });
     },
   },
+  // On in production by default. Database storage so limits hold across serverless instances.
+  rateLimit: {
+    storage: "database",
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60, max: 5 },
+      "/request-password-reset": { window: 60, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
+      "/send-verification-email": { window: 60, max: 3 },
+    },
+  },
   advanced: {
     // Lets Better Auth finish work (timing-attack padding, email sends) after responding.
     backgroundTasks: {
@@ -45,8 +59,8 @@ export const auth = betterAuth({
       },
     },
   },
-  // Keep last so server actions can set cookies.
-  plugins: [nextCookies()],
+  // Keep nextCookies last so server actions can set cookies.
+  plugins: [admin(), nextCookies()],
 });
 
 export type Session = typeof auth.$Infer.Session;

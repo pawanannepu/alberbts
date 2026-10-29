@@ -4,10 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { JsonLd } from "@/components/json-ld";
 import { ProductCard } from "@/components/product-card";
 import { StockStatus } from "@/components/stock-status";
 import { getProductBySlug, getProductSlugs, getRelatedProducts } from "@/lib/catalog";
 import { formatPrice, getStockState } from "@/lib/format";
+import { breadcrumbJsonLd, pageMetadata, productJsonLd } from "@/lib/seo";
 import { services } from "@/lib/store-data";
 
 export async function generateStaticParams() {
@@ -19,7 +21,12 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return {};
-  return { title: product.name, description: product.description };
+  return pageMetadata({
+    title: product.name,
+    description: product.description,
+    path: `/products/${product.slug}`,
+    image: product.gallery[0],
+  });
 }
 
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
@@ -32,6 +39,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
 
   return (
     <main>
+      <JsonLd data={productJsonLd(product)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: product.category.name, path: `/collections/${product.category.slug}` },
+          { name: product.name, path: `/products/${product.slug}` },
+        ])}
+      />
       <nav aria-label="Breadcrumb" className="page caption flex gap-2 pt-6 pb-4">
         <Link href="/" className="hover:underline">
           Home

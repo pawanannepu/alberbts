@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { sendEmail } from "@/lib/email";
 import { orderConfirmationMessage } from "@/lib/email-templates";
-import { siteUrl } from "@/lib/stripe";
+import { siteUrl } from "@/lib/site";
 
 // Sends the confirmation for a paid order at most once. The send is claimed in the database first,
 // so the return page and the webhook (which can both fire) never double-send. A failed send releases

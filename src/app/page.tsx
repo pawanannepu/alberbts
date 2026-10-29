@@ -1,15 +1,27 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { JsonLd } from "@/components/json-ld";
 import { ProductCard } from "@/components/product-card";
 import { getFeaturedProducts, getNewArrivals } from "@/lib/catalog";
+import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 import { collections, editorial, hero, services } from "@/lib/store-data";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Alberbts | Considered essentials and statement pieces",
+  absoluteTitle: true,
+  path: "/",
+  image: { src: hero.image, alt: hero.alt },
+});
 
 export default async function Home() {
   const [featured, newArrivals] = await Promise.all([getFeaturedProducts(8), getNewArrivals(6)]);
 
   return (
     <main>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
       {/* Hero: full-bleed editorial image with text anchored bottom-left */}
       <section className="relative h-[calc(100svh-var(--header-h))] max-h-[60rem] min-h-[30rem] bg-surface text-paper">
         <Image
@@ -108,7 +120,7 @@ export default async function Home() {
               accessory. Our stylists share how to build a wardrobe that works from morning to
               evening.
             </p>
-            <Link href="/journal" className="btn btn-primary mt-8">
+            <Link href="/journal/layering-explained" className="btn btn-primary mt-8">
               Read the story
             </Link>
           </div>

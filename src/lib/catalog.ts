@@ -1,4 +1,4 @@
-import { asc, desc, eq, inArray, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, ne, or, sql, type SQL } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db";
@@ -96,6 +96,14 @@ export async function getProductSlugs(): Promise<string[]> {
   return rows.map((row) => row.slug);
 }
 
+export async function getProductSitemapEntries() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("products");
+
+  return db.select({ slug: products.slug, updatedAt: products.updatedAt }).from(products);
+}
+
 export async function getCategories() {
   "use cache";
   cacheLife("minutes");
@@ -123,7 +131,7 @@ export const SORT_OPTIONS = {
 export type SortKey = keyof typeof SORT_OPTIONS;
 
 export function parseSort(value: string | string[] | undefined): SortKey {
-  return typeof value === "string" && value in SORT_OPTIONS ? (value as SortKey) : "featured";
+  return typeof value === "string" && Object.hasOwn(SORT_OPTIONS, value) ? (value as SortKey) : "featured";
 }
 
 function isCurated(slug: string): slug is keyof typeof curated {
@@ -165,4 +173,45 @@ export async function getCollection(slug: string, sort: SortKey = "featured") {
     orderBy: SORT_OPTIONS[sort].orderBy,
   });
   return { slug, title, products: rows.map(toProduct) };
+}
+
+// Search is deliberately uncached: queries are free-form, so caching would just fill memory.
+// Every word must match the product's name, description or category (case-insensitive).
+export const SEARCH_MAX_LENGTH = 100;
+
+export async function searchProducts(query: string, limit = 48): Promise<Product[]> {
+  const words = query.trim().split(/\s+/).filter(Boolean).slice(0, 5).map((word) => word.slice(0, 50));
+  if (words.length === 0) return [];
+
+  // Escape LIKE wildcards so "50%" or "_" search for the literal characters.
+  const pattern = (word: string) => `%${word.replace(/[\\%_]/g, "\\$&")}%`;
+  // Postgres regex whole-word match (\m ... \M), so "ring" ranks "Diamond Ring" above "Fringe".
+  const wholeWord = (word: string) => `\\m${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\M`;
+
+  const matches = words.map((word) =>
+    or(
+      ilike(products.name, pattern(word)),
+      ilike(products.description, pattern(word)),
+      // Plain column names on purpose: inside a relational query Drizzle would re-alias
+      // qualified ones (categories.id) to the products table.
+      sql`${products.categoryId} in (select id from categories where name ilike ${pattern(word)})`,
+    ),
+  );
+  const wholeWordHits = sql.join(
+    words.map((word) => sql`(${products.name} ~* ${wholeWord(word)})::int`),
+    sql` + `,
+  );
+
+  const rows = await db.query.products.findMany({
+    with: withRelations,
+    where: and(...matches),
+    // Whole-word name matches first, then any name match, then catalog order.
+    orderBy: [
+      desc(sql`${wholeWordHits}`),
+      desc(sql`${products.name} ilike ${pattern(words.join(" "))}`),
+      asc(products.id),
+    ],
+    limit,
+  });
+  return rows.map(toProduct);
 }
