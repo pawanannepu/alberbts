@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 
 import { db } from "@/db";
+import { sendOrderConfirmation } from "@/lib/order-emails";
 import { markOrderPaid } from "@/lib/orders";
 import { getStripe } from "@/lib/stripe";
 
@@ -40,7 +41,10 @@ export async function fulfillCheckoutSession(session: Stripe.Checkout.Session): 
     shippingName: shipping?.name ?? null,
     shippingAddress: shipping?.address ?? null,
   });
-  if (result === "paid") return "paid";
+  if (result === "paid") {
+    await sendOrderConfirmation(orderId); // no-op if already sent
+    return "paid";
+  }
   if (result === "not-found") return "unknown-order";
 
   // The hold was released before payment landed, so the stock may be gone: give the money back.

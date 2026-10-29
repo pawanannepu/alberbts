@@ -34,6 +34,8 @@ export const orders = pgTable(
     shippingAddress: jsonb().$type<ShippingAddress>(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
     paidAt: timestamp({ withTimezone: true }),
+    // Set when the confirmation email is claimed for sending, so it goes out at most once.
+    confirmationSentAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true })
       .notNull()

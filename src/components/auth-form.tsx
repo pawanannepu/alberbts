@@ -14,6 +14,7 @@ export function AuthForm({ mode, next }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [checkEmail, setCheckEmail] = useState<string | null>(null);
   const signUp = mode === "sign-up";
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -24,13 +25,24 @@ export function AuthForm({ mode, next }: Props) {
 
     setError(null);
     setPending(true);
-    const { error } = signUp
-      ? await authClient.signUp.email({ name: String(form.get("name")).trim(), email, password })
-      : await authClient.signIn.email({ email, password });
+    // Absolute URL: where the verification link lands the shopper after confirming.
+    const callbackURL = new URL(next, window.location.origin).toString();
+    const { data, error } = signUp
+      ? await authClient.signUp.email({ name: String(form.get("name")).trim(), email, password, callbackURL })
+      : await authClient.signIn.email({ email, password, callbackURL });
 
     if (error) {
-      setError(error.message ?? "Something went wrong. Please try again.");
+      setError(
+        error.status === 403
+          ? "Please verify your email first. We've just sent you a new verification link."
+          : (error.message ?? "Something went wrong. Please try again."),
+      );
       setPending(false);
+      return;
+    }
+    // No session yet means the account needs its email verified before sign-in.
+    if (signUp && data && !data.token) {
+      setCheckEmail(email);
       return;
     }
     await mergeGuestCart();
@@ -39,6 +51,17 @@ export function AuthForm({ mode, next }: Props) {
   }
 
   const otherHref = `${signUp ? "/sign-in" : "/sign-up"}${next === "/account" ? "" : `?next=${encodeURIComponent(next)}`}`;
+
+  if (checkEmail) {
+    return (
+      <div role="status">
+        <p className="lead">Check your inbox</p>
+        <p className="caption mt-2">
+          We&apos;ve sent a verification link to {checkEmail}. Open it to finish creating your account.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
@@ -55,6 +78,11 @@ export function AuthForm({ mode, next }: Props) {
         hint={signUp ? `At least ${MIN_PASSWORD_LENGTH} characters.` : undefined}
         required
       />
+      {!signUp && (
+        <Link href="/forgot-password" className="caption -mt-2 self-start underline underline-offset-4">
+          Forgot your password?
+        </Link>
+      )}
 
       <p role="alert" className="caption min-h-[1.125rem] text-danger">
         {error}
