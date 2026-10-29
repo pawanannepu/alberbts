@@ -25,9 +25,9 @@ Alberbts lets shoppers browse and search a catalog, fill a bag, pay through Stri
 
 A 30-second walkthrough of the live site: the home page, a collection with sorting and stock badges, and the sign-in page.
 
-[![Watch the demo video](media/demo.mp4)]
+[![Demo of the Alberbts storefront](media/demo.gif)](media/demo.mp4)
 
-*Click the image to play the video.*
+[Watch the full-quality video](media/demo.mp4) · [Open the live site](https://alberbts.vercel.app)
 
 ## Features
 
@@ -137,7 +137,7 @@ src/db/           Drizzle client, table definitions and the demo catalog seed
 src/lib/          Catalog, bag, orders and stock, Stripe, email, auth, SEO, rate limiting
 tests/            Unit, database and smoke tests
 drizzle/          Generated SQL migrations
-media/            Demo video and poster image
+media/            Demo video and its GIF preview
 ```
 
 [`AGENTS.md`](AGENTS.md) has a deeper tour of the code and the project's conventions.
