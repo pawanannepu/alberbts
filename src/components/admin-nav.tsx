@@ -21,7 +21,7 @@ export function AdminNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`label ${active ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
+            className={`tap label ${active ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
           >
             {label}
           </Link>

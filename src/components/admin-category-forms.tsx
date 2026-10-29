@@ -40,7 +40,7 @@ export function DeleteCategoryForm({ id, name }: { id: number; name: string }) {
           {state.error}
         </span>
       )}
-      <button type="submit" disabled={pending} className="caption text-danger underline underline-offset-4">
+      <button type="submit" disabled={pending} className="tap caption text-danger underline underline-offset-4">
         Delete
       </button>
     </form>

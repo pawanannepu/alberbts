@@ -40,11 +40,11 @@ export default async function JournalArticlePage({ params }: PageProps<"/journal
     <main>
       <JsonLd data={articleJsonLd(article)} />
       <nav aria-label="Breadcrumb" className="page caption flex gap-2 pt-6 pb-4">
-        <Link href="/" className="hover:underline">
+        <Link href="/" className="tap hover:underline">
           Home
         </Link>
         <span aria-hidden>/</span>
-        <Link href="/journal" className="hover:underline">
+        <Link href="/journal" className="tap hover:underline">
           Journal
         </Link>
       </nav>

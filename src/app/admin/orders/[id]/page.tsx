@@ -31,7 +31,7 @@ async function OrderDetail({ id }: { id: string }) {
 
   return (
     <div className="max-w-2xl">
-      <Link href="/admin/orders" className="caption underline underline-offset-4">
+      <Link href="/admin/orders" className="tap caption underline underline-offset-4">
         All orders
       </Link>
       <h1 className="heading mt-4">Order #{order.number}</h1>

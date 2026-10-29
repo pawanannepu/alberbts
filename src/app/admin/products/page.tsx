@@ -82,21 +82,21 @@ function ProductRows({ items }: { items: Awaited<ReturnType<typeof listAdminProd
                       aria-label={`Stock for ${p.name}`}
                       className="field !min-h-10 !w-20 !px-3"
                     />
-                    <button type="submit" className="caption underline underline-offset-4">
+                    <button type="submit" className="tap caption underline underline-offset-4">
                       Save
                     </button>
                   </form>
                 </td>
                 <td className="py-3 text-right">
                   <div className="flex items-center justify-end gap-4">
-                    <Link href={`/admin/products/${p.id}`} className="caption underline underline-offset-4">
+                    <Link href={`/admin/products/${p.id}`} className="tap caption underline underline-offset-4">
                       Edit
                     </Link>
                     <form action={deleteProduct}>
                       <input type="hidden" name="id" value={p.id} />
                       <ConfirmButton
                         message={`Delete "${p.name}"? It will be removed from the store and from customers' bags. Past orders keep their details.`}
-                        className="caption text-danger underline underline-offset-4"
+                        className="tap caption text-danger underline underline-offset-4"
                       >
                         Delete
                       </ConfirmButton>

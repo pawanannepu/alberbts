@@ -43,7 +43,7 @@ export default async function CollectionPage({ params, searchParams }: Props) {
   return (
     <main>
       <nav aria-label="Breadcrumb" className="page caption flex gap-2 pt-6 pb-4">
-        <Link href="/" className="hover:underline">
+        <Link href="/" className="tap hover:underline">
           Home
         </Link>
         <span aria-hidden>/</span>
@@ -112,7 +112,7 @@ function SortLinks({ slug, active }: { slug: string; active: SortKey }) {
           href={key === "featured" ? `/collections/${slug}` : `/collections/${slug}?sort=${key}`}
           aria-current={key === active ? "true" : undefined}
           scroll={false}
-          className={`label ${key === active ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
+          className={`tap label ${key === active ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
         >
           {SORT_OPTIONS[key].label}
         </Link>

@@ -7,6 +7,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - `src/db/index.ts` – Drizzle client (Neon HTTP driver); `src/db/schema/` – tables (`auth.ts`: Better Auth user/session/account/verification, generated; `catalog.ts`: categories, products (with `audience`: women/men/unisex), product_images, inventory; `cart.ts`: carts, cart_items; `orders.ts`: orders, order_items)
 - `src/lib/catalog.ts` – cached product + collection queries (`use cache`, tag `products`); the only place pages read products from
 - `src/app/collections/[slug]` – collection pages: every category, plus `all`, `new-in`, `women`, `men` (defined in `catalog.ts`); `?sort=` via links
+- `src/components/rail.tsx` – `Rail` / `DragRow` wrap the `.rail` and `.gallery` scroll rows (globals.css) so a mouse can use them: arrow buttons, click-and-drag, snap in the drag direction. Use them instead of a bare `.rail` div. The `tap` utility (globals.css, built into `.link` / `.nav-link`) enlarges a small text link's hit area vertically without changing layout
 - `src/lib/format.ts` – `formatPrice` (cents → USD), `getStockState`; DB-free, safe anywhere
 - `src/lib/store-data.ts` – static site content only (nav, hero, collection tiles, footer)
 - `src/app/sitemap.ts` / `robots.ts`, `src/lib/seo.ts` (`pageMetadata` for canonical/OpenGraph, JSON-LD builders), `src/lib/site.ts` (`siteUrl`), `src/components/json-ld.tsx`; `src/lib/rate-limit.ts` (`rateLimit(scope, limit, windowSec, identity?)`, Postgres `throttles` table)

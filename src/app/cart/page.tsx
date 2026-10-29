@@ -86,7 +86,7 @@ function CartLineItem({ line }: { line: CartLine }) {
         <div className="flex justify-between gap-4">
           <div className="min-w-0">
             <p className="caption">{line.category}</p>
-            <Link href={href} className="text-body hover:underline underline-offset-4">
+            <Link href={href} className="tap text-body hover:underline underline-offset-4">
               {line.name}
             </Link>
             <p className="caption mt-1">{formatPrice(line.unitPriceCents)}</p>
@@ -100,7 +100,7 @@ function CartLineItem({ line }: { line: CartLine }) {
           </p>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-4 pt-4">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-4">
           <div className="inline-flex items-center border">
             <QuantityButton line={line} quantity={line.quantity - 1} label="Decrease quantity" symbol="−" />
             <span className="min-w-10 text-center text-body">{line.quantity}</span>
@@ -114,7 +114,7 @@ function CartLineItem({ line }: { line: CartLine }) {
           </div>
           <form action={removeFromCart}>
             <input type="hidden" name="slug" value={line.slug} />
-            <button type="submit" className="caption underline underline-offset-4">
+            <button type="submit" className="tap caption underline underline-offset-4">
               Remove
             </button>
           </form>

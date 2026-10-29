@@ -51,7 +51,7 @@ async function Overview() {
         <section>
           <div className="flex items-baseline justify-between">
             <h2 className="label text-muted">Recent orders</h2>
-            <Link href="/admin/orders" className="caption underline underline-offset-4">
+            <Link href="/admin/orders" className="tap caption underline underline-offset-4">
               All orders
             </Link>
           </div>

@@ -32,7 +32,7 @@ async function Orders({ filter }: { filter: OrderFilter }) {
             key={f}
             href={f === "paid" ? "/admin/orders" : `/admin/orders?status=${f}`}
             aria-current={f === filter ? "true" : undefined}
-            className={`label ${f === filter ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
+            className={`tap label ${f === filter ? "underline underline-offset-4" : "text-muted hover:text-ink"}`}
           >
             {label[f]}
           </Link>

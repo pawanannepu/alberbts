@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { JsonLd } from "@/components/json-ld";
 import { ProductCard } from "@/components/product-card";
+import { Rail } from "@/components/rail";
 import { getFeaturedProducts, getNewArrivals } from "@/lib/catalog";
 import { organizationJsonLd, pageMetadata, websiteJsonLd } from "@/lib/seo";
 import { collections, editorial, hero, services } from "@/lib/store-data";
@@ -130,13 +131,14 @@ export default async function Home() {
       {/* New arrivals rail */}
       <section className="section overflow-hidden">
         <div className="page">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <h2 className="heading">New arrivals</h2>
-            <Link href="/collections/new-in" className="link label">
-              Shop all new
-            </Link>
-          </div>
-          <div className="rail">
+          <Rail
+            title="New arrivals"
+            action={
+              <Link href="/collections/new-in" className="link label">
+                Shop all new
+              </Link>
+            }
+          >
             {newArrivals.map((product) => (
               <ProductCard
                 key={product.slug}
@@ -144,7 +146,7 @@ export default async function Home() {
                 sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 28vw, (min-width: 640px) 42vw, 68vw"
               />
             ))}
-          </div>
+          </Rail>
         </div>
       </section>
 

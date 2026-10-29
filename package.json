@@ -15,7 +15,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:admin": "tsx src/db/grant-admin.ts",
     "test": "tsx --test \"tests/unit/**/*.test.{ts,tsx}\"",
-    "test:db": "RUN_DB_TESTS=1 tsx --env-file=.env.local --test \"tests/db/**/*.test.ts\"",
+    "test:db": "RUN_DB_TESTS=1 EMAIL_DRY_RUN=1 tsx --env-file=.env.local --test \"tests/db/**/*.test.ts\"",
     "test:smoke": "tsx --test \"tests/smoke/**/*.test.ts\""
   },
   "dependencies": {

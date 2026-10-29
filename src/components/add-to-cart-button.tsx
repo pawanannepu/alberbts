@@ -35,7 +35,7 @@ export function AddToCartButton({ slug, soldOut }: Props) {
         {result?.ok && (
           <>
             {" "}
-            <Link href="/cart" className="underline underline-offset-4">
+            <Link href="/cart" className="tap underline underline-offset-4">
               View bag
             </Link>
           </>

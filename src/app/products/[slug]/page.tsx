@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { JsonLd } from "@/components/json-ld";
 import { ProductCard } from "@/components/product-card";
+import { DragRow, Rail } from "@/components/rail";
 import { StockStatus } from "@/components/stock-status";
 import { getProductBySlug, getProductSlugs, getRelatedProducts } from "@/lib/catalog";
 import { formatPrice, getStockState } from "@/lib/format";
@@ -48,20 +49,20 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         ])}
       />
       <nav aria-label="Breadcrumb" className="page caption flex gap-2 pt-6 pb-4">
-        <Link href="/" className="hover:underline">
+        <Link href="/" className="tap hover:underline">
           Home
         </Link>
         <span aria-hidden>/</span>
         <Link
           href={`/collections/${product.category.slug}`}
-          className="hover:underline"
+          className="tap hover:underline"
         >
           {product.category.name}
         </Link>
       </nav>
 
       <div className="page items-start pb-(--spacing-section) lg:grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_30rem]">
-        <div className="gallery">
+        <DragRow className="gallery">
           {product.gallery.map((image, i) => (
             <div key={image.src} className="media media-product">
               <Image
@@ -74,7 +75,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
               />
             </div>
           ))}
-        </div>
+        </DragRow>
 
         <section
           aria-labelledby="product-title"
@@ -128,8 +129,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
 
       <section className="section overflow-hidden border-t">
         <div className="page">
-          <h2 className="heading mb-8">You may also like</h2>
-          <div className="rail">
+          <Rail title="You may also like">
             {related.map((item) => (
               <ProductCard
                 key={item.slug}
@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
                 sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 28vw, (min-width: 640px) 42vw, 68vw"
               />
             ))}
-          </div>
+          </Rail>
         </div>
       </section>
     </main>

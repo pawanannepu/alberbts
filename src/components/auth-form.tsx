@@ -79,7 +79,7 @@ export function AuthForm({ mode, next }: Props) {
         required
       />
       {!signUp && (
-        <Link href="/forgot-password" className="caption -mt-2 self-start underline underline-offset-4">
+        <Link href="/forgot-password" className="tap caption -mt-2 self-start underline underline-offset-4">
           Forgot your password?
         </Link>
       )}
@@ -94,7 +94,7 @@ export function AuthForm({ mode, next }: Props) {
 
       <p className="caption text-center">
         {signUp ? "Already have an account? " : "New to Alberbts? "}
-        <Link href={otherHref} className="underline underline-offset-4">
+        <Link href={otherHref} className="tap underline underline-offset-4">
           {signUp ? "Sign in" : "Create an account"}
         </Link>
       </p>

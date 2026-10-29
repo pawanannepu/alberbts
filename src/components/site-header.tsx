@@ -22,7 +22,7 @@ export function SiteHeader() {
 
         <Link
           href="/"
-          className="font-display text-xl font-normal tracking-[0.32em] uppercase sm:text-2xl"
+          className="tap font-display text-xl font-normal tracking-[0.32em] uppercase sm:text-2xl"
         >
           Alberbts
         </Link>
