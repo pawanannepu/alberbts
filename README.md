@@ -25,7 +25,7 @@ Alberbts lets shoppers browse and search a catalog, fill a bag, pay through Stri
 
 A 30-second walkthrough of the live site: the home page, a collection with sorting and stock badges, and the sign-in page.
 
-[![Watch the demo video](media/demo-poster.jpg)](media/demo.mp4)
+[![Watch the demo video](media/demo.mp4)]
 
 *Click the image to play the video.*
 
