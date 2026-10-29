@@ -4,7 +4,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 
 ## Layout
 
-- `src/db/index.ts` – Drizzle client (Neon HTTP driver); `src/db/schema/` – tables (`auth.ts`: Better Auth user/session/account/verification, generated; `catalog.ts`: categories, products (with `audience`: women/men/unisex), product_images, inventory; `cart.ts`: carts, cart_items)
+- `src/db/index.ts` – Drizzle client (Neon HTTP driver); `src/db/schema/` – tables (`auth.ts`: Better Auth user/session/account/verification, generated; `catalog.ts`: categories, products (with `audience`: women/men/unisex), product_images, inventory; `cart.ts`: carts, cart_items; `orders.ts`: orders, order_items)
 - `src/lib/catalog.ts` – cached product + collection queries (`use cache`, tag `products`); the only place pages read products from
 - `src/app/collections/[slug]` – collection pages: every category, plus `all`, `new-in`, `women`, `men` (defined in `catalog.ts`); `?sort=` via links
 - `src/lib/format.ts` – `formatPrice` (cents → USD), `getStockState`; DB-free, safe anywhere
@@ -13,6 +13,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - `src/lib/auth.ts` – Better Auth server (email + password); `src/lib/auth-client.ts` – React client; `src/lib/auth-shared.ts` – client-safe constants + `safeNext`; `src/lib/session.ts` – `getSession()` (needs `<Suspense>`)
 - `src/app/sign-in`, `sign-up`, `account` – auth pages; forms are client components (`auth-form.tsx`, `sign-out-button.tsx`); `account` redirects to `/sign-in?next=` when signed out
 - `src/lib/cart.ts` – cart reads (`getCart`, `getCartCount`, `findCartId`); uncached, needs `<Suspense>`. `src/app/cart/actions.ts` – Server Actions (add / set quantity / remove / `mergeGuestCart`); `src/app/cart/page.tsx` – bag page
+- `src/lib/orders.ts` – order lifecycle: `createOrder` (cart → pending order, holds stock), `cancelOrder`, `releaseExpiredOrders`, `markOrderPaid`; no request context, so webhooks/scripts can call it
 - `src/app/api/auth/[...all]/route.ts` – Better Auth handler
 - `drizzle.config.ts` – drizzle-kit; migrations go to `drizzle/`
 
@@ -30,6 +31,7 @@ eCommerce app. Next.js (App Router, `src/`) · TypeScript · Tailwind v4 · Bett
 - Product reads are cached for ~1 min. After any write that changes products or stock, call `updateTag("products")` (Server Action) or `revalidateTag`.
 - `next build` queries the database (`generateStaticParams`), so it needs `DATABASE_URL` and a seeded DB.
 - Carts live in Postgres: signed-in users have one cart (`carts.user_id`), guests are found via the httpOnly `cart` cookie. `mergeGuestCart()` runs after sign-in/up. Quantities are capped by `maxQuantity(stock)`; totals use live DB prices. Stale guest carts aren't purged yet.
+- Stock is held when an order is created (pending, 30 min) and returned on cancel/expiry. Oversell is blocked by `inventory.quantity >= 0` plus `db.batch()` (one transaction); never decrement stock outside `orders.ts`. A payment for an already-cancelled order must be refunded. Nothing sweeps expired holds yet: call `releaseExpiredOrders()` on a schedule.
 - Auth tables come from `npx auth@latest generate --output src/db/schema/auth.ts` (load `.env.local` first); don't hand-write them. Re-run after adding Better Auth plugins, then `db:generate` + `db:migrate`.
 - `BETTER_AUTH_URL` must match the origin you browse (Better Auth rejects other origins with "Invalid origin"). Always pass `?next=` through `safeNext`.
 - Run `npm run typecheck && npm run lint` before finishing a change.
