@@ -44,5 +44,7 @@
   },
   "overrides": {
     "esbuild": "^0.25.0"
-  }
+  },
+  "license": "MIT",
+  "homepage": "https://alberbts.vercel.app"
 }

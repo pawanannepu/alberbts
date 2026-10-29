@@ -75,6 +75,26 @@ describe("public pages", { skip }, () => {
     assert.ok(/Sitemap: .+\/sitemap\.xml/.test(text));
   });
 
+  test("the site serves its own icons, not the framework default", async () => {
+    const html = await (await get("/")).text();
+    assert.ok(/rel="icon"[^>]*href="\/icon\.svg/.test(html) || /href="\/icon\.svg[^"]*"[^>]*rel="icon"/.test(html), "SVG icon is linked");
+    assert.ok(/apple-touch-icon/.test(html), "Apple touch icon is linked");
+
+    const svg = await get("/icon.svg");
+    assert.equal(svg.status, 200);
+    assert.ok(svg.headers.get("content-type")?.includes("image/svg+xml"));
+
+    const ico = await get("/favicon.ico");
+    assert.equal(ico.status, 200);
+    const bytes = new Uint8Array(await ico.arrayBuffer());
+    assert.deepEqual([...bytes.slice(0, 4)], [0, 0, 1, 0], "valid .ico header");
+    assert.ok(bytes.length < 5000, `favicon.ico is ${bytes.length} bytes; the framework default is ~15 KB`);
+
+    const apple = await get("/apple-icon.png");
+    assert.equal(apple.status, 200);
+    assert.ok(apple.headers.get("content-type")?.includes("image/png"));
+  });
+
   test("an unknown path is a real 404 with the branded page", async () => {
     const res = await get("/definitely/not/a/page");
     assert.equal(res.status, 404);
