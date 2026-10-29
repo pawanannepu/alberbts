@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AddToCartButton } from "@/components/add-to-cart-button";
 import { ProductCard } from "@/components/product-card";
 import { StockStatus } from "@/components/stock-status";
 import { getProductBySlug, getProductSlugs, getRelatedProducts } from "@/lib/catalog";
@@ -74,12 +75,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           </div>
 
           <div className="mt-8">
-            <button type="button" className="btn btn-primary btn-block" disabled={soldOut}>
-              {soldOut ? "Sold out" : "Add to bag"}
-            </button>
-            {soldOut && (
-              <p className="caption mt-3">This piece is currently unavailable.</p>
-            )}
+            <AddToCartButton slug={product.slug} soldOut={soldOut} />
           </div>
 
           <p className="lead mt-8 text-muted">{product.description}</p>

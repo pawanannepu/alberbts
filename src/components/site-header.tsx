@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { navLinks } from "@/lib/store-data";
 
+import { CartLink } from "./cart-link";
 import { MobileMenu } from "./mobile-menu";
 
 export function SiteHeader() {
@@ -33,9 +34,7 @@ export function SiteHeader() {
           <Link href="/account" className="nav-link hidden sm:inline">
             Account
           </Link>
-          <Link href="/cart" className="nav-link">
-            Bag (0)
-          </Link>
+          <CartLink />
         </div>
       </div>
     </header>

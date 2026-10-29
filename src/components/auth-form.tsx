@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { mergeGuestCart } from "@/app/cart/actions";
 import { authClient } from "@/lib/auth-client";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-shared";
 
@@ -32,6 +33,7 @@ export function AuthForm({ mode, next }: Props) {
       setPending(false);
       return;
     }
+    await mergeGuestCart();
     router.push(next);
     router.refresh();
   }
