@@ -1,0 +1,138 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { ProductCard } from "@/components/product-card";
+import { StockStatus } from "@/components/stock-status";
+import {
+  formatPrice,
+  getProduct,
+  getRelatedProducts,
+  getStockState,
+  products,
+  services,
+} from "@/lib/store-data";
+
+export function generateStaticParams() {
+  return products.map((product) => ({ slug: product.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const product = getProduct(slug);
+  if (!product) return {};
+  return { title: product.name, description: product.description };
+}
+
+export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
+  const { slug } = await params;
+  const product = getProduct(slug);
+  if (!product) notFound();
+
+  const soldOut = getStockState(product.stock) === "out-of-stock";
+  const related = getRelatedProducts(product);
+
+  return (
+    <main>
+      <nav aria-label="Breadcrumb" className="page caption flex gap-2 pt-6 pb-4">
+        <Link href="/" className="hover:underline">
+          Home
+        </Link>
+        <span aria-hidden>/</span>
+        <Link
+          href={`/collections/${product.category.toLowerCase()}`}
+          className="hover:underline"
+        >
+          {product.category}
+        </Link>
+      </nav>
+
+      <div className="page items-start pb-(--spacing-section) lg:grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_30rem]">
+        <div className="gallery">
+          {product.gallery.map((image, i) => (
+            <div key={image.src} className="media media-product">
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                sizes={i === 0 ? "(min-width: 1024px) 60vw, 88vw" : "(min-width: 1024px) 30vw, 88vw"}
+                loading={i === 0 ? "eager" : "lazy"}
+                fetchPriority={i === 0 ? "high" : "auto"}
+              />
+            </div>
+          ))}
+        </div>
+
+        <section
+          aria-labelledby="product-title"
+          className="pt-8 lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:pt-0"
+        >
+          <p className="label text-muted">{product.category}</p>
+          <h1 id="product-title" className="heading mt-3">
+            {product.name}
+          </h1>
+          <p className="title mt-4">{formatPrice(product.price)}</p>
+          <div className="mt-4">
+            <StockStatus stock={product.stock} />
+          </div>
+
+          <div className="mt-8">
+            <button type="button" className="btn btn-primary btn-block" disabled={soldOut}>
+              {soldOut ? "Sold out" : "Add to bag"}
+            </button>
+            {soldOut && (
+              <p className="caption mt-3">This piece is currently unavailable.</p>
+            )}
+          </div>
+
+          <p className="lead mt-8 text-muted">{product.description}</p>
+
+          <div className="mt-8">
+            <details className="disclosure" open>
+              <summary>
+                Details
+              </summary>
+              <div>
+                <ul className="flex list-disc flex-col gap-2 pl-4">
+                  {product.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+            <details className="disclosure">
+              <summary>
+                Shipping &amp; returns
+              </summary>
+              <div>
+                <ul className="flex flex-col gap-2">
+                  {services.slice(0, 2).map((service) => (
+                    <li key={service.title}>
+                      {service.title}: {service.text}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
+      </div>
+
+      <section className="section overflow-hidden border-t">
+        <div className="page">
+          <h2 className="heading mb-8">You may also like</h2>
+          <div className="rail">
+            {related.map((item) => (
+              <ProductCard
+                key={item.slug}
+                product={item}
+                sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 28vw, (min-width: 640px) 42vw, 68vw"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}

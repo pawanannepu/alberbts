@@ -1,69 +1,151 @@
 import Image from "next/image";
+import Link from "next/link";
+
+import { ProductCard } from "@/components/product-card";
+import { collections, editorial, hero, products, services } from "@/lib/store-data";
 
 export default function Home() {
+  const newArrivals = [...products].reverse().slice(0, 6);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <main>
+      {/* Hero: full-bleed editorial image with text anchored bottom-left */}
+      <section className="relative h-[calc(100svh-var(--header-h))] max-h-[60rem] min-h-[30rem] bg-surface text-paper">
         <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+          src={hero.image}
+          alt={hero.alt}
+          fill
+          sizes="100vw"
+          loading="eager"
+          fetchPriority="high"
+          className="object-cover object-[50%_30%]"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="page absolute inset-x-0 bottom-0 pb-10 md:pb-16">
+          <p className="label">Autumn / Winter 2026</p>
+          <h1 className="display mt-3 max-w-[14ch]">Considered pieces for colder days</h1>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/collections/new-in" className="btn btn-secondary">
+              Shop new in
+            </Link>
+            <Link href="/collections/women" className="btn btn-text text-paper hover:text-paper/70">
+              Explore women
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+      </section>
+
+      {/* Statement */}
+      <section className="section">
+        <div className="page-narrow text-center">
+          <p className="label text-muted">The Edit</p>
+          <h2 className="heading mt-4">Quiet tailoring, soft textures and a palette made for layering.</h2>
+          <Link href="/collections/new-in" className="link mt-8 inline-block label">
+            Discover the collection
+          </Link>
+        </div>
+      </section>
+
+      {/* Featured collections */}
+      <section className="page pb-(--spacing-section)">
+        <div className="grid gap-2 sm:grid-cols-2 md:gap-4">
+          {collections.map((collection) => (
+            <Link
+              key={collection.slug}
+              href={`/collections/${collection.slug}`}
+              className="media media-product relative text-paper"
+            >
+              <Image
+                src={collection.image}
+                alt={collection.alt}
+                fill
+                sizes="(min-width: 640px) 50vw, 100vw"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5 md:p-8">
+                <h2 className="heading">{collection.title}</h2>
+                <span className="label mt-3 inline-block underline underline-offset-4">
+                  Shop {collection.title}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured products */}
+      <section className="page pb-(--spacing-section)">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <h2 className="heading">Featured</h2>
+          <Link href="/collections/all" className="link label">
+            View all
+          </Link>
+        </div>
+        <div className="product-grid">
+          {products.slice(0, 8).map((product) => (
+            <ProductCard key={product.slug} product={product} />
+          ))}
+        </div>
+      </section>
+
+      {/* Editorial split */}
+      <section className="bg-surface">
+        <div className="page grid items-center gap-8 py-10 md:grid-cols-2 md:gap-16 md:py-0">
+          <div className="media aspect-[4/5] bg-line md:-my-0 md:aspect-auto md:h-[44rem]">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src={editorial.image}
+              alt={editorial.alt}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div className="max-w-md md:py-16">
+            <p className="label text-muted">Journal</p>
+            <h2 className="heading mt-4">Layering, explained</h2>
+            <p className="lead mt-4 text-muted">
+              Start with soft knits, add a structured outer layer and finish with one considered
+              accessory. Our stylists share how to build a wardrobe that works from morning to
+              evening.
+            </p>
+            <Link href="/journal" className="btn btn-primary mt-8">
+              Read the story
+            </Link>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* New arrivals rail */}
+      <section className="section overflow-hidden">
+        <div className="page">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <h2 className="heading">New arrivals</h2>
+            <Link href="/collections/new-in" className="link label">
+              Shop all new
+            </Link>
+          </div>
+          <div className="rail">
+            {newArrivals.map((product) => (
+              <ProductCard
+                key={product.slug}
+                product={product}
+                sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 28vw, (min-width: 640px) 42vw, 68vw"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section className="border-t">
+        <div className="page grid grid-cols-2 gap-x-4 gap-y-10 py-12 lg:grid-cols-4">
+          {services.map((service) => (
+            <div key={service.title}>
+              <h3 className="label">{service.title}</h3>
+              <p className="caption mt-3 max-w-[30ch]">{service.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
