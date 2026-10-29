@@ -12,7 +12,8 @@ npm run dev
 
 ## Structure
 
-- `src/db/` – Drizzle client (`index.ts`) and table definitions (`schema.ts`, empty for now)
+- `src/db/` – Drizzle client (`index.ts`), tables (`schema/`), and demo seed (`seed.ts`)
+- `src/lib/catalog.ts` – cached product queries used by the storefront
 - `src/lib/auth.ts` – Better Auth server instance (Drizzle adapter, email/password enabled)
 - `src/lib/auth-client.ts` – Better Auth React client
 - `src/app/api/auth/[...all]/route.ts` – Better Auth route handler
@@ -20,10 +21,10 @@ npm run dev
 
 ## Scripts
 
-`dev`, `build`, `start`, `lint`, `typecheck`, `db:generate`, `db:migrate`, `db:push`, `db:studio`
+`dev`, `build`, `start`, `lint`, `typecheck`, `db:generate`, `db:migrate`, `db:push`, `db:studio`, `db:seed`
 
 ## Next steps
 
 Better Auth needs its tables (`user`, `session`, `account`, `verification`) before sign-in works:
-run `npx auth generate` to produce the Drizzle schema, add it to `src/db/schema.ts`
+run `npx auth generate` to produce the Drizzle schema, add it to `src/db/schema/`
 (and pass `schema` to `drizzleAdapter` if needed), then `npm run db:push`.

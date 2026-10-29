@@ -6,9 +6,11 @@ config();
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./src/db/schema.ts",
+  schema: "./src/db/schema",
+  casing: "snake_case",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    // Migrations run best over a direct (unpooled) connection.
+    url: (process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL)!,
   },
 });

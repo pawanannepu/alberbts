@@ -1,4 +1,4 @@
-import { getStockState } from "@/lib/store-data";
+import { getStockState } from "@/lib/format";
 
 const copy = {
   "in-stock": { text: () => "In stock", dot: "bg-ink" },

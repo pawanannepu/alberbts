@@ -5,33 +5,29 @@ import { notFound } from "next/navigation";
 
 import { ProductCard } from "@/components/product-card";
 import { StockStatus } from "@/components/stock-status";
-import {
-  formatPrice,
-  getProduct,
-  getRelatedProducts,
-  getStockState,
-  products,
-  services,
-} from "@/lib/store-data";
+import { getProductBySlug, getProductSlugs, getRelatedProducts } from "@/lib/catalog";
+import { formatPrice, getStockState } from "@/lib/format";
+import { services } from "@/lib/store-data";
 
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  const slugs = await getProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return {};
   return { title: product.name, description: product.description };
 }
 
 export default async function ProductPage({ params }: PageProps<"/products/[slug]">) {
   const { slug } = await params;
-  const product = getProduct(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const soldOut = getStockState(product.stock) === "out-of-stock";
-  const related = getRelatedProducts(product);
+  const related = await getRelatedProducts(product.slug, product.categoryId);
 
   return (
     <main>
@@ -41,10 +37,10 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
         </Link>
         <span aria-hidden>/</span>
         <Link
-          href={`/collections/${product.category.toLowerCase()}`}
+          href={`/collections/${product.category.slug}`}
           className="hover:underline"
         >
-          {product.category}
+          {product.category.name}
         </Link>
       </nav>
 
@@ -68,11 +64,11 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           aria-labelledby="product-title"
           className="pt-8 lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:pt-0"
         >
-          <p className="label text-muted">{product.category}</p>
+          <p className="label text-muted">{product.category.name}</p>
           <h1 id="product-title" className="heading mt-3">
             {product.name}
           </h1>
-          <p className="title mt-4">{formatPrice(product.price)}</p>
+          <p className="title mt-4">{formatPrice(product.priceCents)}</p>
           <div className="mt-4">
             <StockStatus stock={product.stock} />
           </div>

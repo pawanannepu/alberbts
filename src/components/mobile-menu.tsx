@@ -48,6 +48,11 @@ export function MobileMenu({ links }: Props) {
                 </Link>
               </li>
             ))}
+            <li className="border-b">
+              <Link href="/account" className="heading block py-4" onClick={() => setOpen(false)}>
+                Account
+              </Link>
+            </li>
           </ul>
         </nav>
       )}

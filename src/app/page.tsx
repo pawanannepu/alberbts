@@ -2,10 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ProductCard } from "@/components/product-card";
-import { collections, editorial, hero, products, services } from "@/lib/store-data";
+import { getFeaturedProducts, getNewArrivals } from "@/lib/catalog";
+import { collections, editorial, hero, services } from "@/lib/store-data";
 
-export default function Home() {
-  const newArrivals = [...products].reverse().slice(0, 6);
+export default async function Home() {
+  const [featured, newArrivals] = await Promise.all([getFeaturedProducts(8), getNewArrivals(6)]);
 
   return (
     <main>
@@ -82,7 +83,7 @@ export default function Home() {
           </Link>
         </div>
         <div className="product-grid">
-          {products.slice(0, 8).map((product) => (
+          {featured.map((product) => (
             <ProductCard key={product.slug} product={product} />
           ))}
         </div>
